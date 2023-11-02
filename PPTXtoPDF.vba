@@ -21,7 +21,6 @@ Sub ConvertFolderToPDF()
     Set objFolder = CreateObject("Scripting.FileSystemObject").GetFolder(strFolderPath)
     For Each objFile In objFolder.Files
         If LCase(Right(objFile.Name, 4)) = ".ppt" Or LCase(Right(objFile.Name, 5)) = ".pptx" Then
-            Open the PowerPoint file
             Set pptPresentation = pptApp.Presentations.Open(objFile.Path)
             strPDFPath = objFile.ParentFolder & "\" & Left(objFile.Name, InStrRev(objFile.Name, ".") - 1) & ".pdf"
             pptPresentation.SaveAs strPDFPath, 32 ' 32 denotes the format for PDF in PowerPoint
