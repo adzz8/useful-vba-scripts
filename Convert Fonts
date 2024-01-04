@@ -1,0 +1,69 @@
+Sub ConvertFonts()
+    Dim pptApp As Object
+    Dim pptPresentation As Object
+    Dim objFolder As Object
+    Dim objFile As Object
+    Dim sourceFolderPath As String
+    Dim destinationFolderPath As String
+    Dim sld As Object
+    Dim shp As Object
+
+    ' User selects folder with PowerPoint files
+    With Application.FileDialog(msoFileDialogFolderPicker)
+        .Title = "Select Folder containing PowerPoint files"
+        .AllowMultiSelect = False
+        If .Show = -1 Then
+            sourceFolderPath = .SelectedItems(1)
+        Else
+            Exit Sub
+        End If
+    End With
+
+    ' User selects folder to save converted PowerPoint files
+    With Application.FileDialog(msoFileDialogFolderPicker)
+        .Title = "Select Folder to save converted PowerPoint files"
+        .AllowMultiSelect = False
+        If .Show = -1 Then
+            destinationFolderPath = .SelectedItems(1)
+        Else
+            Exit Sub
+        End If
+    End With
+
+    ' Create a new PowerPoint application
+    Set pptApp = CreateObject("PowerPoint.Application")
+
+    ' Loop through each file in the source folder
+    Set objFolder = CreateObject("Scripting.FileSystemObject").GetFolder(sourceFolderPath)
+    For Each objFile In objFolder.Files
+        If LCase(Right(objFile.Name, 4)) = ".ppt" Or LCase(Right(objFile.Name, 5)) = ".pptx" Then
+            
+            ' Open the PowerPoint file
+            Set pptPresentation = pptApp.Presentations.Open(objFolder.Path & "\" & objFile.Name)
+
+            ' Loop through each slide and shape to change the font
+            For Each sld In pptPresentation.Slides
+                For Each shp In sld.Shapes
+                    If shp.HasTextFrame Then
+                        If shp.TextFrame.HasText Then
+                            shp.TextFrame.TextRange.Font.Name = "Dyllabi"
+                        End If
+                    End If
+                Next shp
+            Next sld
+
+            ' Save to the selected destination folder
+            pptPresentation.SaveAs destinationFolderPath & "\" & objFile.Name
+            pptPresentation.Close
+        End If
+    Next objFile
+
+    ' Cleanup and release objects
+    pptApp.Quit
+    Set pptPresentation = Nothing
+    Set pptApp = Nothing
+    Set objFile = Nothing
+    Set objFolder = Nothing
+
+    MsgBox "Conversion Complete", vbInformation
+End Sub
