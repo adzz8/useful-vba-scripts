@@ -37,18 +37,14 @@ Sub ConvertFonts()
     Set objFolder = CreateObject("Scripting.FileSystemObject").GetFolder(sourceFolderPath)
     For Each objFile In objFolder.Files
         If LCase(Right(objFile.Name, 4)) = ".ppt" Or LCase(Right(objFile.Name, 5)) = ".pptx" Then
-            
+
             ' Open the PowerPoint file
             Set pptPresentation = pptApp.Presentations.Open(objFolder.Path & "\" & objFile.Name)
 
             ' Loop through each slide and shape to change the font
             For Each sld In pptPresentation.Slides
                 For Each shp In sld.Shapes
-                    If shp.HasTextFrame Then
-                        If shp.TextFrame.HasText Then
-                            shp.TextFrame.TextRange.Font.Name = "Dyllabi"
-                        End If
-                    End If
+                    Call ChangeFont(shp)
                 Next shp
             Next sld
 
@@ -66,4 +62,27 @@ Sub ConvertFonts()
     Set objFolder = Nothing
 
     MsgBox "Conversion Complete", vbInformation
+End Sub
+
+Sub ChangeFont(ByVal shp As Object)
+    Dim row As Integer
+    Dim col As Integer
+    Dim cellShape As Object
+
+    If shp.HasTextFrame Then
+        If shp.TextFrame.HasText Then
+            shp.TextFrame.TextRange.Font.Name = "Dyllabi"
+        End If
+    ElseIf shp.Type = msoGroup Then
+        Dim i As Integer
+        For i = 1 To shp.GroupItems.Count
+            Call ChangeFont(shp.GroupItems.Item(i))
+        Next i
+    ElseIf shp.HasTable Then
+        For row = 1 To shp.Table.Rows.Count
+            For col = 1 To shp.Table.Columns.Count
+                shp.Table.Cell(row, col).Shape.TextFrame.TextRange.Font.Name = "Dyllabi"
+            Next col
+        Next row
+    End If
 End Sub
